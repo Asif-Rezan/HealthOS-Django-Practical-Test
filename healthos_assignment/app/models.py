@@ -19,7 +19,8 @@ class UserInfo(AbstractUser):
 class Subscription(models.Model):
     user=models.OneToOneField(UserInfo, on_delete=CASCADE,primary_key=True)
     subscription_type = models.CharField(max_length = 50, null= True)
-    
+    subscription_end_time = models.DateTimeField(null= True)
+
 
 
 
