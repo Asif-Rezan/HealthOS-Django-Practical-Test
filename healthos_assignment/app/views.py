@@ -2,6 +2,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from .models import UserInfo
 from random import randint
+from .serializers import userSeriliazer
 # Create your views here.
 
 
@@ -53,6 +54,16 @@ def UserRegistration(request):
   return Response("Saved data")
 
 
-  
+
+@api_view(['GET'])
+def getUnsubcribedUserPhoneNumber(request):
+
+  unsubcribed_user_info = UserInfo.objects.filter(subscription__subscription_type__contains= '')
+
+  user_serializer= userSeriliazer(unsubcribed_user_info, many=True)
+
+  return Response(user_serializer.data)
+
+
 
 
