@@ -1,8 +1,12 @@
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-from .models import UserInfo
+from .models import UserInfo, Subscription
 from random import randint
 from .serializers import userSeriliazer
+from datetime import datetime  
+from datetime import timedelta 
+
+
 # Create your views here.
 
 
@@ -55,14 +59,64 @@ def UserRegistration(request):
 
 
 
+
+#  Get the users phone number if they are not subscribed
 @api_view(['GET'])
 def getUnsubcribedUserPhoneNumber(request):
-
   unsubcribed_user_info = UserInfo.objects.filter(subscription__subscription_type__contains= '')
-
   user_serializer= userSeriliazer(unsubcribed_user_info, many=True)
-
   return Response(user_serializer.data)
+
+
+
+
+
+
+# Customer subscription start ------------------>>>
+
+@api_view(['GET','POST'])
+def SubscribeUser(request,type):
+
+  print(request.user)
+  
+  if(type=='Bronze'):
+
+      Subscription.objects.create(
+      user=request.user,
+      subscription_type='Bronze',
+      subscription_end_time = datetime.now() + timedelta(days=365)
+
+    )
+  elif(type=='Silver'):
+
+      Subscription.objects.create(
+      user=request.user,
+      subscription_type='Silver',
+      subscription_end_time = datetime.now() + timedelta(days=365)
+
+    )
+  elif(type=='Gold'):
+      
+      end_date = None
+
+      Subscription.objects.create(
+      user=request.user,
+      subscription_type='Gold',
+      subscription_end_time = end_date
+
+    )
+  
+  else:
+    return Response('Something is wrong! please try again!')
+
+    
+  
+  return Response('Subscription Successfull')
+
+# Customer subscription end ------------------>>>
+
+
+
 
 
 
