@@ -1,6 +1,6 @@
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-from .models import UserInfo, Subscription
+from .models import UpdateSubscriptionTrack, UserInfo, Subscription
 from random import randint
 from .serializers import userSeriliazer
 from datetime import datetime  
@@ -79,19 +79,11 @@ def SubscribeUser(request,type):
 
   print(request.user)
   
-  if(type=='Bronze'):
+  if(type == 'Silver' or type == 'Bronze'):
 
       Subscription.objects.create(
       user=request.user,
-      subscription_type='Bronze',
-      subscription_end_time = datetime.now() + timedelta(days=365)
-
-    )
-  elif(type=='Silver'):
-
-      Subscription.objects.create(
-      user=request.user,
-      subscription_type='Silver',
+      subscription_type= type,
       subscription_end_time = datetime.now() + timedelta(days=365)
 
     )
@@ -114,6 +106,45 @@ def SubscribeUser(request,type):
   return Response('Subscription Successfull')
 
 # Customer subscription end ------------------>>>
+
+
+
+
+
+#Update customer subscription and track
+@api_view(['GET','PUT','POST'])
+def updateSubscription(request,type):
+  user = request.user
+  try:
+    privious_subscription_plan= Subscription.objects.get(user=user)
+  except:
+    privious_subscription_plan = None
+
+  if(type == 'Silver' or type == 'Bronze'):
+    Subscription.objects.filter(user=user).update(
+      subscription_type= type,
+      subscription_end_time = datetime.now() + timedelta(days=365)
+
+    )
+    
+  elif(type == 'Gold'):
+    end_date = None
+    Subscription.objects.filter(user=user).update(
+      subscription_type= type,
+      subscription_end_time = end_date
+
+    )
+
+  
+  # Keep track on changing customer subscription
+  UpdateSubscriptionTrack.objects.create(
+    user = user,
+    previous_subscription_type = privious_subscription_plan.subscription_type,
+    new_subscription_type = type
+
+  )
+  
+  return Response("Update successfull!")
 
 
 

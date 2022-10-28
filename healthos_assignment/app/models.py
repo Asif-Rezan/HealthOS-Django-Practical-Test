@@ -22,6 +22,11 @@ class Subscription(models.Model):
     subscription_end_time = models.DateTimeField(null= True)
 
 
+class UpdateSubscriptionTrack(models.Model):
+    user = user=models.ForeignKey(UserInfo, on_delete= CASCADE)
+    previous_subscription_type = models.CharField(max_length = 50)
+    new_subscription_type = models.CharField(max_length = 50)
+
 
 
 
