@@ -1,3 +1,4 @@
+from django.views import View
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from .models import UpdateSubscriptionTrack, UserInfo, Subscription
@@ -5,7 +6,11 @@ from random import randint
 from .serializers import userSeriliazer
 from datetime import datetime  
 from datetime import timedelta 
+import stripe
+from django.conf import settings
 
+
+stripe.api_key = settings.STRIPE_SECRET_KEY
 
 # Create your views here.
 
@@ -24,7 +29,7 @@ def UserRegistration(request):
 
     
 
-    # validate phone number start -------->>>>>>
+    # validate and assign phone number start -------->>>>>>
 
     range_start = 10**(8-1)   
     range_end = (10**8)-1
@@ -33,10 +38,10 @@ def UserRegistration(request):
     country_code = '+88'
     phn_operator_code = ['017','016','019','015','018']
     rand_operator_code = phn_operator_code[randint(0,4)] 
-    phoneNumber = country_code + rand_operator_code + rand_number
+    phoneNumber = country_code + rand_operator_code + rand_number  #assign a phone number
     #print('Phone number ...',phoneNumber)
 
-   #  validate phone number end ------>>>>>>>>>>
+   #  validate and assign phone number end ------>>>>>>>>>>
 
 
 
@@ -126,7 +131,7 @@ def updateSubscription(request,type):
       subscription_end_time = datetime.now() + timedelta(days=365)
 
     )
-    
+
   elif(type == 'Gold'):
     end_date = None
     Subscription.objects.filter(user=user).update(
@@ -145,6 +150,32 @@ def updateSubscription(request,type):
   )
   
   return Response("Update successfull!")
+
+
+
+
+
+
+#Stripe payment gateway
+class MakePaymentSession(View):
+  def post(self,request, *args, **kwargs):
+    try:
+        checkout_session = stripe.checkout.Session.create(
+            line_items=[
+                {          
+                    'price': '{{PRICE_ID}}',
+                    'quantity': 1,
+                },
+            ],
+            mode='payment',
+            success_url=settings.SITE_URL + '?success=true',
+            cancel_url=settings.SITE_URL + '?canceled=true',
+        )
+    except Exception as e:
+        return Response(str(e))
+
+    
+    
 
 
 
